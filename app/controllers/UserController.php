@@ -185,8 +185,9 @@ class UserController extends Controller
     public function login($email, $password)
     {
         $user = $this->userModel->findByEmail($email, true);
-        // $this->helper->dd($user, false);
-        if ($user && password_verify($password, $user['password_hash'])) {
+        if (!is_null($user['deleted_at'])) {
+            $location = "/?error=invalid_credentials";
+        } else if ($user && password_verify($password, $user['password_hash'])) {
             if (session_status() == PHP_SESSION_NONE) session_start();
             $_SESSION['user'] = $user;
             $location = "/dashboard";
