@@ -121,7 +121,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button form="create-user-form" type="submit" class="continue-btn disabled">Submit</button>
+                <button form="create-user-form" type="submit" class="continue-btn">Submit</button>
             </div>
         </div>
     </div>
@@ -202,31 +202,29 @@
                 .toggleClass("success", toggleSuccess);
         });
 
-        $("#create-user-modal input").on('input', () => checkFormIsValid());
-
         $('button[form="edit-user-form"]').on("click", function(e) {
             e.preventDefault();
 
             const form = $("#edit-user-form");
             const data = form.serializeObject();
             data.user_id = $("#edit-user-id").text();
+            const formValidationMsg = getFormValidationMsg(data, "edit");
 
-            if (!data.username.length || !form.find('input[name="username"]')[0].checkValidity()) {
-                return form.find('input[name="username"]')[0].reportValidity(),
-                    Swal.fire({
-                        icon: "error",
-                        title: "Username is Too Short",
-                        text: "A username must be at least 5 characters"
-                    });
+            if (formValidationMsg) {
+                return Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: formValidationMsg
+                });
             }
 
-            if (!data.email.length || !form.find('input[name="email"]')[0].checkValidity()) {
-                return form.find('input[name="email"]')[0].reportValidity();
-            }
-
-            if (!data?.role?.length || !form.find('select[name="role"]')[0].checkValidity()) {
-                return form.find('select[name="role"]')[0].reportValidity();
-            }
+            Swal.fire({
+                title: "Loading...",
+                html: `Editing user, <strong>"${data.username}"</strong>.`,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
             $.ajax({
                 url: `/users/${data.user_id}`,
@@ -261,39 +259,23 @@
 
             const form = $("#create-user-form");
             const data = form.serializeObject();
+            const formValidationMsg = getFormValidationMsg(data);
 
-            if (!data.username.length || !form.find('input[name="username"]')[0].checkValidity()) {
-                return form.find('input[name="username"]')[0].reportValidity(),
-                    Swal.fire({
-                        icon: "error",
-                        title: "Username is Too Short",
-                        text: "A new user's username must be at least 5 characters"
-                    });
-            }
-
-            if (!data.email.length || !form.find('input[name="email"]')[0].checkValidity()) {
-                return form.find('input[name="email"]')[0].reportValidity();
-            }
-
-            if (!data?.role?.length || !form.find('select[name="role"]')[0].checkValidity()) {
-                return form.find('select[name="role"]')[0].reportValidity();
-            }
-
-            if ($(this).hasClass('disabled')) {
-                const icon = "error";
-                let title = "";
-                if ((data['new-password'] !== data['confirm-new-password'])) {
-                    title = "Passwords must match.";
-                } else if (data['new-password'].length < 5) {
-                    title = "Password must be at least 5 characters.";
-                }
+            if (formValidationMsg) {
                 return Swal.fire({
-                    icon,
-                    title
+                    icon: "error",
+                    title: "Error",
+                    text: formValidationMsg
                 });
             }
 
-            if (!checkFormIsValid()) return;
+            Swal.fire({
+                title: "Loading...",
+                html: `Creating user, <strong>"${data.username}"</strong>.`,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
             $.ajax({
                 url: "/users",
@@ -321,29 +303,6 @@
                 }
             });
         });
-
-        function checkFormIsValid() {
-            const data = $("#create-user-form").serializeObject();
-            let disableTheBtn = false;
-            for (const key in data) {
-                if (Object.prototype.hasOwnProperty.call(data, key)) {
-                    // check to see if any value has been at all for inputs
-                    if (!data[key].length) disableTheBtn = true;
-                }
-            }
-
-            if (data['new-password'] !== data['confirm-new-password']) {
-                disableTheBtn = true;
-            }
-
-            if (data['new-password'].length < 5 || data['confirm-new-password'].length < 5) {
-                disableTheBtn = true;
-            }
-
-            $('button[form="create-user-form"]').toggleClass('disabled', disableTheBtn);
-
-            return !disableTheBtn;
-        }
 
         $("#users-table tbody tr").on("click", function() {
             const modal = $("#edit-user-modal");
@@ -380,6 +339,14 @@
 
             if (!res.isConfirmed) return;
 
+            Swal.fire({
+                title: "Loading...",
+                html: `Deleting user, <strong>"${data.username}"</strong>.`,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             $.ajax({
                 url: `/users/${data.user_id}`,
                 method: "DELETE",
@@ -407,6 +374,28 @@
             });
         });
     });
+
+    function getFormValidationMsg(data, type = "create") {
+        let errMsg = "";
+
+        if (type === "create" || type === "edit") {
+            if (data.username.length < 5) {
+                errMsg = "A user's username must be at least 5 characters.";
+            } else if (!data.email.length || !data.email.match(STATE.regEx.email)) {
+                errMsg = `Please provide your user with a valid email address. You entered "${data.email}".`;
+            }
+        }
+
+        if (type === "create") {
+            if (data['new-password'] !== data['confirm-new-password']) {
+                errMsg = "Passwords must match.";
+            } else if (data['new-password'].length < 5) {
+                errMsg = "Password must be at least 5 characters.";
+            }
+        }
+
+        return errMsg || null;
+    }
 </script>
 
 <?php include_once __DIR__ . "/../../partials/footer.php"; ?>

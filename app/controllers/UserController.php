@@ -187,7 +187,7 @@ class UserController extends Controller
         $user = $this->userModel->findByEmail($email, true);
         // $this->helper->dd($user, false);
         if ($user && password_verify($password, $user['password_hash'])) {
-            session_start();
+            if (session_status() == PHP_SESSION_NONE) session_start();
             $_SESSION['user'] = $user;
             $location = "/dashboard";
         } else {
@@ -198,7 +198,7 @@ class UserController extends Controller
 
     public function logout()
     {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) session_start();
         session_destroy();
         header("Location: /");
     }

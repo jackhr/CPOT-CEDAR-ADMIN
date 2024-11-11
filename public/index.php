@@ -1,10 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/core/bootstrap.php';
 
-use App\Controllers\CutoutController;
 use App\Controllers\RoleController;
-use App\Controllers\SconceController;
-use App\Controllers\UniqueCeramicController;
 use App\Controllers\UserController;
 use App\Core\ControllerFactory;
 use App\Middleware\AuthMiddleware;
@@ -17,7 +14,7 @@ $router = new Router($helper);
 
 $router->group('/', function (Router $router) {
     $router->get('', function () use ($router) {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) session_start();
         if (isset($_SESSION['user'])) {
             $router->redirect("/dashboard");
         } else {
@@ -51,27 +48,6 @@ $router->group('/', function (Router $router) {
         $router->put('/{id}', [RoleController::class, 'update']);
         $router->delete('/{id}', [RoleController::class, 'delete']);
     }, [AdminMiddleware::class]);
-
-    $router->group('sconces', function (Router $router) {
-        $router->get('', [SconceController::class, 'listSconces']);
-        $router->post('', [SconceController::class, 'create']);
-        $router->post('/{id}', [SconceController::class, 'update']);
-        $router->delete('/{id}', [SconceController::class, 'delete']);
-    });
-
-    $router->group('ceramics', function (Router $router) {
-        $router->get('', [UniqueCeramicController::class, 'listCeramics']);
-        $router->post('', [UniqueCeramicController::class, 'create']);
-        $router->post('/{id}', [UniqueCeramicController::class, 'update']);
-        $router->delete('/{id}', [UniqueCeramicController::class, 'delete']);
-    });
-
-    $router->group('cutouts', function (Router $router) {
-        $router->get('', [CutoutController::class, 'listCutouts']);
-        $router->post('', [CutoutController::class, 'create']);
-        $router->post('/{id}', [CutoutController::class, 'update']);
-        $router->delete('/{id}', [CutoutController::class, 'delete']);
-    });
 }, [AuthMiddleware::class]);
 
 // Dispatch the request to the appropriate route

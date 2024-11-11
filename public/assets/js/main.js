@@ -1,6 +1,11 @@
 const STATE = {
     dtDefaultOpts: {
         scrollX: true
+    },
+    regEx: {
+        doubleOrInt: /^\d*\.?\d{1,2}$/,
+        decimal: /^\d*\.?\d+$/,
+        email: /[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-z]{2,}$/,
     }
 }
 

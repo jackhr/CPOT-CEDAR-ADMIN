@@ -59,7 +59,7 @@ class GeneralHelper
 
     public function getSessionUser($logoutIfNull = true)
     {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) session_start();
         $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
         if (is_null($user) && $logoutIfNull) {
             $this->router->redirect("/logout");
