@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Config;
 
 use PDO;
@@ -29,6 +30,9 @@ class Database
         }
     }
 
+    /**
+     * @return PDO;
+     */
     public function getConnection()
     {
         return $this->con;

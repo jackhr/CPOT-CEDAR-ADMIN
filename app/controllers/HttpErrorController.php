@@ -18,4 +18,8 @@ class HttpErrorController extends Controller
         $user = $this->helper->getSessionUser();
         $this->view("errors/404.php", compact("user"));
     }
+
+    public function renderUnderConstructionPage() {
+        $this->view("errors/under-construction.php");
+    }
 }

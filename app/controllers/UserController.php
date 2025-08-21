@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Helpers\GeneralHelper;
 use App\Models\Role;
 use App\Models\User;
+use Exception;
 
 class UserController extends Controller
 {
@@ -38,7 +39,6 @@ class UserController extends Controller
         $this->view("admin/users/list.php", [
             "user" => $_SESSION['user'],
             "users" => $this->userModel->readAll(),
-            "roles" => $roles,
             "title" => "Users"
         ]);
     }
@@ -50,7 +50,6 @@ class UserController extends Controller
             'username' => $username,
             'email' => $email,
             'new-password' => $password,
-            'role' => $role_id
         ] = $_POST;
 
         $new_user = new User();
@@ -71,7 +70,6 @@ class UserController extends Controller
         $new_user->username = $username;
         $new_user->email = $email;
         $new_user->password_hash = $password;
-        $new_user->role_id = $role_id;
 
         if ($new_user->create()) {
             $message = "User created successfully.";
@@ -93,7 +91,6 @@ class UserController extends Controller
             'username' => $username,
             'email' => $email,
             'user_id' => $user_id,
-            'role' => $role_id
         ] = $data;
 
         $user = $this->userModel->findById($user_id);
@@ -128,7 +125,6 @@ class UserController extends Controller
         $this->userModel->username = $username;
         $this->userModel->email = $email;
         $this->userModel->user_id = $user_id;
-        $this->userModel->role_id = $role_id;
 
         if ($this->userModel->update()) {
             $message = "User updated successfully.";
@@ -158,14 +154,12 @@ class UserController extends Controller
             $this->helper->respondToClient(null, $status, $message);
         }
 
-        $this->userModel->user_id = $user_id;
-
-        if ($this->userModel->delete()) {
+        try {
+            $this->userModel->destroy($user_id);
             $message = "User deleted successfully.";
-            $user_to_delete = $this->userModel->findById($user_id);
-        } else {
+        } catch (Exception $e) {
             $status = 409;
-            $message = "Error updating user.";
+            $message = "Error deleting user user: $e";
         }
 
         $this->helper->respondToClient($user_to_delete, $status, $message);

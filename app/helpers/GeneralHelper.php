@@ -125,4 +125,24 @@ class GeneralHelper
         }
         return $acceptable;
     }
+
+    function truncateToThreeDecimals($value)
+    {
+        // Check if the value is a number
+        if (!is_numeric($value)) return "Invalid input, not a number.";
+
+        // Check if the number has more than 3 decimal places
+        if (strpos((string)$value, '.') !== false) {
+            // Split the value into integer and decimal parts
+            list($integer, $decimal) = explode('.', (string)$value);
+
+            // If the decimal part has more than 3 digits, truncate it
+            if (strlen($decimal) > 3) {
+                // Truncate to 3 decimal places
+                $value = floor($value * 1000) / 1000;
+            }
+        }
+
+        return $value;
+    }
 }

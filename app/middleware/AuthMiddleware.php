@@ -16,6 +16,9 @@ class AuthMiddleware
             session_destroy();
             header('Location: /');
             exit();
+        } else if (getenv("UNDER_CONSTRUCTION") === "1") {
+            header('Location: /under-construction'); // hotfix
+            exit();
         }
 
         return true; // If user is logged in, continue with the request
